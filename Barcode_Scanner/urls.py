@@ -4,5 +4,5 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name="index.html")),  # Vue.js entry point
+    path('', TemplateView.as_view(template_name="static/index.html")),  # Vue.js entry point
 ]
