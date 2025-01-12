@@ -60,7 +60,7 @@ ROOT_URLCONF = 'Barcode_Scanner.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'static'],  # Add this line
+        'DIRS': [os.path.join(BASE_DIR, 'static')],  # Vue.js `index.html` location
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
