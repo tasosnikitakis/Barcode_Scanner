@@ -17,4 +17,6 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  // Add this base setting to fix asset paths
+  base: '/static/',  // Ensure assets are placed relative to /static/
 })
