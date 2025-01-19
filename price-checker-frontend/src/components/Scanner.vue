@@ -11,11 +11,11 @@
     />
     <button @click="fetchProduct">Fetch Product</button>
 
-    <!-- Real-Time Scanner -->
+    <!-- Camera Live View for Scanning -->
     <div id="scanner-container">
       <video id="barcode-scanner" width="100%" height="auto"></video>
     </div>
-    <button v-if="!scannerActive" @click="startScanner">Start Scanner</button>
+    <button v-if="!scannerActive" @click="startScanner">Run Scanner</button>
     <button v-if="scannerActive" @click="stopScanner">Stop Scanner</button>
 
     <!-- Product Details -->
@@ -34,13 +34,13 @@
 </template>
 
 <script>
-import Quagga from 'quagga'; // Import QuaggaJS
-import apiClient from '@/api'; // Axios instance
+import Quagga from "quagga"; // Import QuaggaJS
+import apiClient from "@/api"; // Axios instance
 
 export default {
   data() {
     return {
-      barcode: '', // Manual input barcode
+      barcode: "", // Manual input barcode
       product: null, // Product data
       error: null, // Error message
       scannerActive: false, // Tracks whether the scanner is active
@@ -55,34 +55,39 @@ export default {
         const response = await apiClient.get(`/product/${this.barcode}/`);
         this.product = response.data;
       } catch (err) {
-        this.error = err.response?.data?.error || 'Failed to fetch product';
+        this.error = err.response?.data?.error || "Failed to fetch product";
       }
     },
 
-    // Start the barcode scanner
+    // Start the barcode scanner with live camera view
     startScanner() {
       this.scannerActive = true;
 
       Quagga.init(
         {
           inputStream: {
-            name: 'Live',
-            type: 'LiveStream',
-            target: document.querySelector('#barcode-scanner'), // Attach scanner to the video element
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector("#barcode-scanner"), // Attach scanner to the video element
             constraints: {
               width: 640,
               height: 480,
-              facingMode: 'environment', // Use the back camera
+              facingMode: "environment", // Use the back camera
             },
           },
           decoder: {
-            readers: ['code_128_reader', 'ean_reader', 'upc_reader'], // Supported barcode types
+            readers: [
+              "code_128_reader",
+              "ean_reader",
+              "upc_reader",
+              "ean_8_reader",
+            ], // Supported barcode types
           },
         },
         (err) => {
           if (err) {
-            console.error('QuaggaJS initialization failed:', err);
-            this.error = 'Failed to initialize the scanner.';
+            console.error("QuaggaJS initialization failed:", err);
+            this.error = "Failed to initialize the scanner.";
             this.scannerActive = false;
             return;
           }
@@ -90,6 +95,7 @@ export default {
         }
       );
 
+      // Detect barcodes and handle them
       Quagga.onDetected(this.onBarcodeDetected);
     },
 
@@ -103,7 +109,7 @@ export default {
     // Handle barcode detection
     async onBarcodeDetected(result) {
       const detectedBarcode = result.codeResult.code; // Extract the detected barcode
-      console.log('Detected barcode:', detectedBarcode);
+      console.log("Detected barcode:", detectedBarcode);
 
       // Fetch the product using the detected barcode
       this.barcode = detectedBarcode; // Update manual input for visibility
@@ -131,5 +137,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 2px solid #ddd;
+  padding: 10px;
 }
 </style>
