@@ -11,10 +11,16 @@
     />
     <button @click="fetchProduct">Fetch Product</button>
 
-    <!-- Camera Live Stream -->
+    <!-- Camera Live Stream with Overlay -->
     <div id="scanner-container">
       <video id="camera-view" autoplay playsinline muted width="100%" height="auto"></video>
+
+      <!-- Overlay Box -->
+      <div id="overlay">
+        <div class="scanner-line"></div>
+      </div>
     </div>
+
     <button v-if="!scannerActive" @click="startScanner">Run Scanner</button>
     <button v-if="scannerActive" @click="stopScanner">Stop Scanner</button>
 
@@ -165,11 +171,56 @@ export default {
   color: red;
 }
 #scanner-container {
+  position: relative;
   margin: 20px 0;
   display: flex;
   justify-content: center;
   align-items: center;
   border: 2px solid #ddd;
   padding: 10px;
+}
+
+/* Overlay Box */
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid transparent;
+  pointer-events: none;
+}
+
+#overlay::before {
+  content: "";
+  position: absolute;
+  top: 30%; /* Adjust for center */
+  left: 10%; /* Adjust width */
+  width: 80%;
+  height: 30%;
+  border: 3px dashed #00ff00;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  pointer-events: none;
+}
+
+.scanner-line {
+  position: absolute;
+  top: 45%; /* Center the scanner line */
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: red;
+  animation: scanner-line-move 1s infinite ease-in-out;
+}
+
+/* Animates the scanner line */
+@keyframes scanner-line-move {
+  0% {
+    top: 35%;
+  }
+  100% {
+    top: 65%;
+  }
 }
 </style>
