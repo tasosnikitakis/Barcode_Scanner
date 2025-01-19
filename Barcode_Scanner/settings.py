@@ -35,6 +35,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Comment out the following line and place your railway URL, and your production URL in the array.
 # CSRF_TRUSTED_ORIGINS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://django-server-production-6689.up.railway.app',  # Replace with your actual deployment domain
+]
+
 # Application definition
 
 INSTALLED_APPS = [
