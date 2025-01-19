@@ -111,12 +111,6 @@ export default {
               width: 1280,
               height: 720,
             },
-            area: { // Limit scanning to the overlay area
-              top: "45%", // Matches the overlay's top edge
-              bottom: "60%", // Matches the overlay's bottom edge
-              left: "0%", // Full width
-              right: "100%", // Full width
-            },
           },
           decoder: {
             readers: [
