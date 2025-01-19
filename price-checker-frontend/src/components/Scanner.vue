@@ -11,7 +11,7 @@
     />
     <button @click="fetchProduct">Fetch Product</button>
 
-    <!-- Camera Live View for Scanning -->
+    <!-- Camera Live View -->
     <div id="scanner-container">
       <video id="barcode-scanner" width="100%" height="auto"></video>
     </div>
@@ -35,7 +35,7 @@
 
 <script>
 import Quagga from "quagga"; // Import QuaggaJS
-import apiClient from "@/api"; // Axios instance
+import apiClient from "@/api"; // Axios instance for backend communication
 
 export default {
   data() {
@@ -70,9 +70,11 @@ export default {
             type: "LiveStream",
             target: document.querySelector("#barcode-scanner"), // Attach scanner to the video element
             constraints: {
-              width: 640,
-              height: 480,
-              facingMode: "environment", // Use the back camera
+              video: {
+                facingMode: { ideal: "environment" }, // Use the back camera
+                width: { ideal: 1280 }, // Higher resolution for iOS
+                height: { ideal: 720 }, // Higher resolution for iOS
+              },
             },
           },
           decoder: {
@@ -91,6 +93,7 @@ export default {
             this.scannerActive = false;
             return;
           }
+          console.log("QuaggaJS initialized successfully.");
           Quagga.start();
         }
       );
