@@ -7,7 +7,6 @@
       type="text"
       v-model="barcode"
       placeholder="Enter barcode"
-      @keyup.enter="fetchProduct"
     />
     <button @click="fetchProduct">Fetch Product</button>
 
@@ -20,7 +19,6 @@
         <div class="scanner-line"></div>
       </div>
     </div>
-
     <button v-if="!scannerActive" @click="startScanner">Run Scanner</button>
     <button v-if="scannerActive" @click="stopScanner">Stop Scanner</button>
 
@@ -56,6 +54,10 @@ export default {
   methods: {
     // Fetch product from backend by barcode
     async fetchProduct() {
+      if (!this.barcode) {
+        this.error = "No barcode detected.";
+        return;
+      }
       this.error = null;
       this.product = null;
       try {
@@ -144,19 +146,11 @@ export default {
       console.log("Scanner stopped.");
     },
 
-    // Handle barcode detection
-    async onBarcodeDetected(result) {
+    // Handle barcode detection (fills the input but does not call backend)
+    onBarcodeDetected(result) {
       const detectedBarcode = result.codeResult.code; // Extract the detected barcode
       console.log("Detected barcode:", detectedBarcode);
-
-      // Fetch the product using the detected barcode
-      this.barcode = detectedBarcode; // Update manual input for visibility
-      await this.fetchProduct();
-
-      // Stop scanner if a product is found
-      if (this.product) {
-        this.stopScanner();
-      }
+      this.barcode = detectedBarcode; // Fill the barcode input field
     },
   },
   beforeUnmount() {
@@ -194,10 +188,10 @@ export default {
 #overlay::before {
   content: "";
   position: absolute;
-  top: 30%; /* Adjust for center */
-  left: 10%; /* Adjust width */
-  width: 80%;
-  height: 30%;
+  top: 45%; /* Center it vertically */
+  left: 0; /* Full width */
+  width: 100%; /* Full width */
+  height: 15%; /* Narrow the vertical range */
   border: 3px dashed #00ff00;
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
@@ -206,9 +200,9 @@ export default {
 
 .scanner-line {
   position: absolute;
-  top: 45%; /* Center the scanner line */
-  left: 10%;
-  width: 80%;
+  top: 50%; /* Center the scanner line */
+  left: 0;
+  width: 100%; /* Full width */
   height: 3px;
   background: red;
   animation: scanner-line-move 1s infinite ease-in-out;
@@ -217,10 +211,10 @@ export default {
 /* Animates the scanner line */
 @keyframes scanner-line-move {
   0% {
-    top: 35%;
+    top: 45%; /* Matches overlay top */
   }
   100% {
-    top: 65%;
+    top: 55%; /* Matches overlay bottom */
   }
 }
 </style>
