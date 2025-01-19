@@ -16,7 +16,10 @@
 
       <!-- Overlay Box -->
       <div id="overlay">
-        <div class="scanner-line"></div>
+        <div
+          class="scanner-line"
+          :class="{ detected: barcodeDetected }"
+        ></div>
       </div>
     </div>
     <button v-if="!scannerActive" @click="startScanner">Run Scanner</button>
@@ -49,6 +52,7 @@ export default {
       error: null, // Error message
       scannerActive: false, // Tracks whether the scanner is active
       videoStream: null, // Video stream object for camera feed
+      barcodeDetected: false, // Whether a barcode has been detected
     };
   },
   methods: {
@@ -71,6 +75,7 @@ export default {
     // Start the camera and initialize barcode scanning
     async startScanner() {
       this.error = null;
+      this.barcodeDetected = false;
       this.scannerActive = true;
 
       // Start live video stream using MediaStream API
@@ -146,11 +151,15 @@ export default {
       console.log("Scanner stopped.");
     },
 
-    // Handle barcode detection (fills the input but does not call backend)
+    // Handle barcode detection (stops scanning and updates UI)
     onBarcodeDetected(result) {
       const detectedBarcode = result.codeResult.code; // Extract the detected barcode
       console.log("Detected barcode:", detectedBarcode);
-      this.barcode = detectedBarcode; // Fill the barcode input field
+
+      // Fill the barcode input field and stop the scanner
+      this.barcode = detectedBarcode;
+      this.barcodeDetected = true; // Update UI to indicate detection
+      this.stopScanner(); // Stop further scanning
     },
   },
   beforeUnmount() {
@@ -188,10 +197,10 @@ export default {
 #overlay::before {
   content: "";
   position: absolute;
-  top: 45%; /* Center it vertically */
-  left: 0; /* Full width */
+  top: 45%; /* Center vertically */
+  left: 0;
   width: 100%; /* Full width */
-  height: 15%; /* Narrow the vertical range */
+  height: 15%; /* Narrow vertical range */
   border: 3px dashed #00ff00;
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
@@ -200,21 +209,27 @@ export default {
 
 .scanner-line {
   position: absolute;
-  top: 50%; /* Center the scanner line */
+  top: 50%; /* Start at the center */
   left: 0;
   width: 100%; /* Full width */
   height: 3px;
-  background: red;
+  background: green; /* Default green color */
   animation: scanner-line-move 1s infinite ease-in-out;
+  transition: background 0.3s; /* Smooth transition to red */
+}
+
+.scanner-line.detected {
+  animation: none; /* Stop movement */
+  background: red; /* Change to red when detected */
 }
 
 /* Animates the scanner line */
 @keyframes scanner-line-move {
   0% {
-    top: 45%; /* Matches overlay top */
+    top: 45%;
   }
   100% {
-    top: 55%; /* Matches overlay bottom */
+    top: 55%;
   }
 }
 </style>
