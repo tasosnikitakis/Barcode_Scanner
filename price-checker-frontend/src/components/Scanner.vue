@@ -11,9 +11,9 @@
     />
     <button @click="fetchProduct">Fetch Product</button>
 
-    <!-- Camera Live View -->
+    <!-- Camera Live Stream -->
     <div id="scanner-container">
-      <video id="barcode-scanner" width="100%" height="auto"></video>
+      <video id="camera-view" autoplay playsinline muted width="100%" height="auto"></video>
     </div>
     <button v-if="!scannerActive" @click="startScanner">Run Scanner</button>
     <button v-if="scannerActive" @click="stopScanner">Stop Scanner</button>
@@ -44,6 +44,7 @@ export default {
       product: null, // Product data
       error: null, // Error message
       scannerActive: false, // Tracks whether the scanner is active
+      videoStream: null, // Video stream object for camera feed
     };
   },
   methods: {
@@ -59,22 +60,43 @@ export default {
       }
     },
 
-    // Start the barcode scanner with live camera view
-    startScanner() {
+    // Start the camera and initialize barcode scanning
+    async startScanner() {
+      this.error = null;
       this.scannerActive = true;
 
+      // Start live video stream using MediaStream API
+      try {
+        const videoElement = document.querySelector("#camera-view");
+        const constraints = {
+          video: {
+            facingMode: "environment", // Use back camera
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        };
+        this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoElement.srcObject = this.videoStream;
+
+        console.log("Camera feed started successfully.");
+      } catch (err) {
+        console.error("Failed to start the camera feed:", err);
+        this.error = "Unable to access the camera. Please allow camera permissions.";
+        this.scannerActive = false;
+        return;
+      }
+
+      // Start QuaggaJS for barcode detection
       Quagga.init(
         {
           inputStream: {
             name: "Live",
             type: "LiveStream",
-            target: document.querySelector("#barcode-scanner"), // Attach scanner to the video element
+            target: document.querySelector("#camera-view"), // Attach Quagga to the same video
             constraints: {
-              video: {
-                facingMode: { ideal: "environment" }, // Use the back camera
-                width: { ideal: 1280 }, // Higher resolution for iOS
-                height: { ideal: 720 }, // Higher resolution for iOS
-              },
+              facingMode: "environment",
+              width: 1280,
+              height: 720,
             },
           },
           decoder: {
@@ -93,20 +115,27 @@ export default {
             this.scannerActive = false;
             return;
           }
-          console.log("QuaggaJS initialized successfully.");
           Quagga.start();
+          console.log("QuaggaJS initialized successfully.");
         }
       );
 
-      // Detect barcodes and handle them
       Quagga.onDetected(this.onBarcodeDetected);
     },
 
-    // Stop the barcode scanner
+    // Stop the scanner and camera feed
     stopScanner() {
       Quagga.stop();
       Quagga.offDetected(this.onBarcodeDetected);
       this.scannerActive = false;
+
+      // Stop video stream
+      if (this.videoStream) {
+        const tracks = this.videoStream.getTracks();
+        tracks.forEach((track) => track.stop());
+        this.videoStream = null;
+      }
+      console.log("Scanner stopped.");
     },
 
     // Handle barcode detection
@@ -125,7 +154,7 @@ export default {
     },
   },
   beforeUnmount() {
-    // Ensure the scanner is stopped when the component is destroyed
+    // Ensure the scanner and camera are stopped when the component is destroyed
     this.stopScanner();
   },
 };
