@@ -1,22 +1,17 @@
-import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import vueDevTools from 'vite-plugin-vue-devtools'
+import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueJsx(),
-    vueDevTools(),
-  ],
+  base: '/static/', // Match Django's STATIC_URL
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': path.resolve(__dirname, './src'), // Map `@` to the `src` directory
     },
   },
-  // Add this base setting to fix asset paths
-  base: '/static/',  // Ensure assets are placed relative to /static/
+  build: {
+    outDir: '../static', // Place built files directly into Django's static directory
+    emptyOutDir: true,   // Clear previous builds
+  },
+  plugins: [vue()],
 })
